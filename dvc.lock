@@ -1,0 +1,95 @@
+schema: '2.0'
+stages:
+  data_ingestion:
+    cmd: python src/data_ingestion.py
+    deps:
+    - path: src/data_ingestion.py
+      hash: md5
+      md5: 8c0e1465c81a11ee252cb47c10f2fa8f
+      size: 3652
+    params:
+      params.yaml:
+        data_ingestion.test_size: 0.2
+    outs:
+    - path: data/raw
+      hash: md5
+      md5: 1a287d34dc172d9f950c03dae35f7e73.dir
+      size: 484846
+      nfiles: 2
+  data_preprocessing:
+    cmd: python src/data_preprocessing.py
+    deps:
+    - path: data/raw
+      hash: md5
+      md5: 1a287d34dc172d9f950c03dae35f7e73.dir
+      size: 484846
+      nfiles: 2
+    - path: src/data_preprocessing.py
+      hash: md5
+      md5: ae0059b79590609927f72e3c373f1865
+      size: 3973
+    outs:
+    - path: data/interim
+      hash: md5
+      md5: d99be5cb2b019d747166f90739fa6d08.dir
+      size: 260073
+      nfiles: 2
+  feature_engineering:
+    cmd: python src/feature_engineering.py
+    deps:
+    - path: data/interim/test_processed.csv
+      hash: md5
+      md5: 1630d3b26a66fa87fcba7eb97681223f
+      size: 55156
+    - path: data/interim/train_processed.csv
+      hash: md5
+      md5: b6cff39fb7819c46fcb899fd824aedd0
+      size: 204917
+    - path: src/feature_engineering.py
+      hash: md5
+      md5: cf8448c21ab5f64a81b288de0c331814
+      size: 3910
+    params:
+      params.yaml:
+        feature_engineering.max_features: 35
+    outs:
+    - path: data/processed/test_tfidf.csv
+      hash: md5
+      md5: 9951f7a82431a8e229af3439c5cb4d58
+      size: 174596
+    - path: data/processed/train_tfidf.csv
+      hash: md5
+      md5: 0547c98ac4b6cf29db94d6744cc9b753
+      size: 660154
+  model_building:
+    cmd: python src/model_building.py
+    deps:
+    - path: data/processed/train_tfidf.csv
+      hash: md5
+      md5: 0547c98ac4b6cf29db94d6744cc9b753
+      size: 660154
+    params:
+      params.yaml:
+        model_building.n_estimators: 22
+        model_building.random_state: 2
+    outs:
+    - path: models/model.pkl
+      hash: md5
+      md5: be6d9721273763846083c71e1f18b058
+      size: 720147
+  model_evaluation:
+    cmd: python src/model_evaluation.py
+    deps:
+    - path: data/processed/test_tfidf.csv
+      hash: md5
+      md5: 9951f7a82431a8e229af3439c5cb4d58
+      size: 174596
+    - path: models/model.pkl
+      hash: md5
+      md5: be6d9721273763846083c71e1f18b058
+      size: 720147
+    outs:
+    - path: reports/metrics.json
+      hash: md5
+      md5: abba219d58644dde3de017d8eedbd8b8
+      size: 145
